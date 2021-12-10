@@ -6,6 +6,8 @@ class Snake {
 
         this.draw = () => {
             this.segments.forEach(segment => {
+                strokeWeight(1);
+                stroke(51);
                 fill(88, 255, 51);
                 let x = segment.x * CELL_WIDTH;
                 let y = segment.y * CELL_HEIGHT;

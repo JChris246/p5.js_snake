@@ -1,8 +1,8 @@
 // SNAKE
-const HEIGHT = 600, WIDTH = 1000;
-const CELL_WIDTH = CELL_HEIGHT = 20;
-const COLS = Math.floor(WIDTH / CELL_WIDTH), ROWS = Math.floor(HEIGHT / CELL_HEIGHT);
-const MAX_CELLS = COLS * ROWS;
+let HEIGHT = 560, WIDTH = 980;
+let CELL_WIDTH = CELL_HEIGHT = 20;
+let COLS = Math.floor(WIDTH / CELL_WIDTH), ROWS = Math.floor(HEIGHT / CELL_HEIGHT);
+let MAX_CELLS = COLS * ROWS;
 
 var grid = [];
 var snake;
@@ -17,10 +17,58 @@ const Direction = {
     right: 3
 };
 
+let points = 0;
+let level = 1;
+let Framerate = 8;
+
+window.addEventListener("load", () => {
+    // by default the mode is medium
+    document.getElementById("medium").classList.add("font-extrabold");
+
+    document.getElementById("hard").addEventListener("click", () => {
+        HEIGHT = 600;
+        WIDTH = 1000;
+        CELL_WIDTH = CELL_HEIGHT = 10;
+        init();
+        let modes = document.getElementById("modes");
+        modes.classList.remove("flex-row", "w-96");
+        modes.classList.add("flex-col", "w-48");
+        document.getElementById("hard").classList.add("font-extrabold");
+        document.getElementById("medium").classList.remove("font-extrabold");
+        document.getElementById("easy").classList.remove("font-extrabold");
+    });
+
+    document.getElementById("medium").addEventListener("click", () => {
+        HEIGHT = 560;
+        WIDTH = 980;
+        CELL_WIDTH = CELL_HEIGHT = 20;
+        init();
+        let modes = document.getElementById("modes");
+        modes.classList.remove("flex-row", "w-96");
+        modes.classList.add("flex-col", "w-48");
+        document.getElementById("medium").classList.add("font-extrabold");
+        document.getElementById("hard").classList.remove("font-extrabold");
+        document.getElementById("easy").classList.remove("font-extrabold");
+    });
+
+    document.getElementById("easy").addEventListener("click", () => {
+        HEIGHT = 400;
+        WIDTH = 600;
+        CELL_WIDTH = CELL_HEIGHT = 20;
+        init();
+        let modes = document.getElementById("modes");
+        modes.classList.remove("flex-col", "w-48");
+        modes.classList.add("flex-row", "w-96");
+        document.getElementById("easy").classList.add("font-extrabold");
+        document.getElementById("hard").classList.remove("font-extrabold");
+        document.getElementById("medium").classList.remove("font-extrabold");
+    });
+});
+
 // first function ran by p5
 function setup() {
     createCanvas(WIDTH, HEIGHT)
-    frameRate(10)
+    frameRate(Framerate);
 
     for(let y = 0; y < ROWS; y++)
         for(let x = 0; x < COLS; x++)
@@ -49,20 +97,67 @@ function draw() {
         gameOver = true;
 
     // check if the draw loop should be stopped because the game is over
-    if (gameOver)
+    if (gameOver) {
         noLoop();
+        document.getElementById("gameoverContainer").classList.remove("hidden");
+        document.getElementById("restartBtn").addEventListener("click", () => {
+            init();
+            document.getElementById("gameoverContainer").classList.add("hidden");
+        });
+    }
 
     // check of the head of the snake has hit the food
     if (snake.intersects(food)) {
         snake.grow(); // grow the snake by 1 segment
         // set a new location for the food
         food = new Food(getRandomLocation());
+        document.getElementById("points").innerText = ++points;
+        if (points % 5 == 0) {
+            level++;
+            Framerate += 2;
+            frameRate(Framerate);
+            document.getElementById("level").innerText = level;
+        }
     }
 
     // draw the snake and the food on the canvas
     snake.draw();
     food.draw();
 }
+
+const init = () => {
+    // update the canvas based on the mode selected
+    resizeCanvas(WIDTH, HEIGHT);
+    COLS = Math.floor(WIDTH / CELL_WIDTH);
+    ROWS = Math.floor(HEIGHT / CELL_HEIGHT);
+    MAX_CELLS = COLS * ROWS;
+
+    // redraw the canvas based on the mode selected
+    grid = [];
+    for(let y = 0; y < ROWS; y++)
+        for(let x = 0; x < COLS; x++)
+            grid.push(new Cell(x, y))
+
+    // initialize the scoreboard values
+    points = 0;
+    level = 1;
+    document.getElementById("points").innerText = points;
+    document.getElementById("level").innerText = level;
+    
+    // reset the framerate
+    Framerate = 8;
+    frameRate(Framerate);
+
+    // remove the restart button (if it is shown)
+    document.getElementById("gameoverContainer").classList.add("hidden");
+
+    // restart the game loop and recreate a new snake (and food)
+    gameOver = false;
+    loop();
+    snake = food = null;
+    snake = new Snake(Direction.right);
+    food = new Food(getRandomLocation(true));
+};
 
 function keyPressed() {
     if (keyCode === LEFT_ARROW)

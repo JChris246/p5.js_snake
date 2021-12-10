@@ -3,6 +3,7 @@ class Food {
         this.location = location;
 
         this.draw = () => {
+            noStroke();
             fill(255, 0, 0);
             let x = this.location.x * CELL_WIDTH;
             let y = this.location.y * CELL_HEIGHT;
